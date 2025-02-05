@@ -3,7 +3,7 @@
 %%% Utility module to start/work with supervisors.
 %%% @end
 %%%-------------------------------------------------------------------
--module(ebus_supervisor).
+-module(chat_room_supervisor).
 
 -behaviour(supervisor).
 
@@ -36,7 +36,7 @@
   [supervisor:child_spec()], options()
 ) -> supervisor:startlink_ret().
 start_link(Children, Options) when is_list(Children) ->
-  Spec = ebus_supervisor_spec:supervise(Children, Options),
+  Spec = chat_room_supervisor_spec:supervise(Children, Options),
   start_link(?MODULE, Spec, Options).
 
 -spec start_link(module(), term(), options()) -> supervisor:startlink_ret().
