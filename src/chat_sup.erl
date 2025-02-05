@@ -1,4 +1,4 @@
--module(ebus_sup).
+-module(chat_room_sup).
 
 -export([start_link/0]).
 

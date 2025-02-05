@@ -1,0 +1,14 @@
+{application, chat_room, [
+  {description, "Simple, Distributed and Scalable PubSub Message Bus written in Erlang"},
+  {vsn, "0.3.0"},
+  {id, "chat_room"},
+  {modules, []},
+  {registered, []},
+  {applications, [kernel, stdlib]},
+  {mod, {chat_room, []}},
+  {env, []},
+  {maintainers, ["N/A"]},
+  {build_tools, ["rebar3", "make"]},
+  {doc, "doc"},
+  {pkg_name, "chat_room"},
+]}.
