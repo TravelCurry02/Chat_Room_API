@@ -1,0 +1,16 @@
+{application, ebus, [
+    {description, "Simple, Distributed and Scalable PubSub Message Bus written in Erlang"},
+    {vsn, "0.3.0"},
+    {id, "ebus"},
+    {modules, []},
+    {registered, []},
+    {applications, [kernel, stdlib]},
+    {mod, {ebus, []}},
+    {env, []},
+    {maintainers, ["Carlos Andres Bolanos"]},
+    {licenses, ["MIT"]},
+    {build_tools, ["rebar3", "make"]},
+    {doc, "doc"},
+    {pkg_name, "erlbus"},
+  ]}.
+  
