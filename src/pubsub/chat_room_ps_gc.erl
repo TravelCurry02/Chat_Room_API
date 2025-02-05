@@ -1,99 +1,66 @@
--module(chat_room_ps_gc).
-
--behaviour(gen_server).
+-module(chat_room_ps).
 
 %% API
 -export([
-  start_link/2,
-  down/2,
-  unsubscribe/4
+  subscribe/3,
+  subscribe/4,
+  unsubscribe/3,
+  broadcast/3,
+  broadcast_from/4,
+  subscribers/2,
+  list/1
 ]).
 
-%% gen_server callbacks
--export([
-  init/1,
-  handle_call/3,
-  handle_cast/2,
-  handle_info/2,
-  terminate/2,
-  code_change/3
-]).
+%%%===================================================================
+%%% Types
+%%%===================================================================
+
+-type options() :: chat_room_ps_local:options().
 
 %%%===================================================================
 %%% API
 %%%===================================================================
 
-%% @doc
-%% Starts the server.
-%% <ul>
-%% <li>`ServerName': The name to register the server under.</li>
-%% <li>`LocalName': The name of the local table.</li>
-%% </ul>
--spec start_link(atom(), atom()) -> gen_server:start_ret().
-start_link(ServerName, LocalName) ->
-  gen_server:start_link(
-    {local, ServerName}, ?MODULE, [ServerName, LocalName], []
-  ).
+%% @equiv subscribe(Server, Pid, Topic, [])
+subscribe(Server, Pid, Topic) -> 
+  subscribe(Server, Pid, Topic, []).
 
-%% @doc
-%% Force table clean up because the given pid is down asynchronously.
-%% <ul>
-%% <li>`GCServer': The registered server name or pid.</li>
-%% <li>`Pid': The subscriber pid.</li>
-%% </ul>
--spec down(atom(), pid()) -> ok.
-down(GCServer, Pid) when is_atom(GCServer) ->
-  gen_server:cast(GCServer, {down, Pid}).
+%% Subscribes the pid to the PubSub adapter's topic.
+-spec subscribe(atom(), pid(), binary(), options()) -> ok | {error, term()}.
+subscribe(Server, Pid, Topic, Opts) when is_atom(Server) ->
+  call(Server, subscribe, [Pid, Topic, Opts]).
 
-%% @doc
-%% Removes subscriber's subscription for topic
--spec unsubscribe(pid(), binary(), atom(), atom()) -> ok.
-unsubscribe(Pid, Topic, TopicsTable, PidsTable) ->
-  true = ets:match_delete(TopicsTable, {Topic, {Pid, '_'}}),
-  true = ets:delete_object(PidsTable, {Pid, Topic}),
-  ok.
+%% Unsubscribes the pid from the PubSub adapter's topic.
+-spec unsubscribe(atom(), pid(), binary()) -> ok | {error, term()}.
+unsubscribe(Server, Pid, Topic) when is_atom(Server) ->
+  call(Server, unsubscribe, [Pid, Topic]).
+
+%% Broadcasts message on the given topic.
+-spec broadcast(atom(), binary(), term()) -> ok | {error, term()}.
+broadcast(Server, Topic, Msg) when is_atom(Server) ->
+  call(Server, broadcast, [none, Topic, Msg]).
+
+%% Broadcasts message to all but `FromPid` on the given topic.
+-spec broadcast_from(atom(), pid(), binary(), term()) -> ok | {error, term()}.
+broadcast_from(Server, FromPid, Topic, Msg)
+    when is_atom(Server), is_pid(FromPid) ->
+  call(Server, broadcast, [FromPid, Topic, Msg]).
+
+%% Returns a set of subscribers' pids for the given topic.
+-spec subscribers(atom(), binary()) -> [pid()].
+subscribers(Server, Topic) when is_atom(Server) ->
+  call(Server, subscribers, [Topic]).
+
+%% Returns the topic list. DO NOT USE IN PROD.
+-spec list(atom()) -> [binary()].
+list(Server) when is_atom(Server) ->
+  call(Server, list, []).
 
 %%%===================================================================
-%%% gen_server callbacks
+%%% Internal functions
 %%%===================================================================
 
-%% @hidden
-init([ServerName, LocalName]) ->
-  {ok, #{topics => LocalName, pids => ServerName}}.
-
-%% @hidden
-handle_call({subscription, Pid}, _From, #{pids := Pids} = State) ->
-  try
-    {reply, ets:lookup_element(Pids, Pid, 2), State}
-  catch
-    error:badarg -> {reply, [], State}
-  end;
-handle_call(_Request, _From, State) ->
-  {reply, ok, State}.
-
-%% @hidden
-handle_cast({down, Pid}, #{pids := Pids, topics := Topics} = State) ->
-  try
-    Topics0 = ets:lookup_element(Pids, Pid, 2),
-    lists:foreach(fun(Topic) ->
-      true = ets:match_delete(Topics, {Topic, {Pid, '_'}})
-    end, Topics0),
-    true = ets:match_delete(Pids, {Pid, '_'})
-  catch
-    error:badarg -> badarg
-  end,
-  {noreply, State};
-handle_cast(_Request, State) ->
-  {noreply, State}.
-
-%% @hidden
-handle_info(_Info, State) ->
-  {noreply, State}.
-
-%% @hidden
-terminate(_Reason, _State) ->
-  ok.
-
-%% @hidden
-code_change(_OldVsn, State, _Extra) ->
-  {ok, State}.
+%% @private
+call(Server, Kind, Args) -> 
+  [{Kind, Module, Head}] = ets:lookup(Server, Kind),
+  apply(Module, Kind, Head ++ Args).
