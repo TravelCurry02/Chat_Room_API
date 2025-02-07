@@ -10,5 +10,5 @@
   {maintainers, ["N/A"]},
   {build_tools, ["rebar3", "make"]},
   {doc, "doc"},
-  {pkg_name, "chat_room"},
+  {pkg_name, "chat_room"}
 ]}.
