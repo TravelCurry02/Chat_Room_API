@@ -1,4 +1,4 @@
--module(chat_room).
+-module(ebus).
 
 -behaviour(application).
 

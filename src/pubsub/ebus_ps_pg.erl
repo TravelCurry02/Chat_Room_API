@@ -1,6 +1,5 @@
--module(chat_room_ps_pg).
+-module(ebus_ps_pg).
 
-%% API
 -export([
   child_spec/0,
   join/2,
@@ -8,18 +7,12 @@
   get_members/1
 ]).
 
-%%%===================================================================
-%%% API
-%%%===================================================================
-
 -ifndef(OTP_RELEASE).
-  %% Ensure OTP_RELEASE for OTP 20 or lower since this macro was
-  %% introduced in OTP release 21.
+
   -define(OTP_RELEASE, 20).
 -endif.
 
 -if(?OTP_RELEASE >= 23).
-%% PG
 
 -spec child_spec() -> supervisor:child_spec().
 child_spec() ->
@@ -41,7 +34,6 @@ get_members(Group) when is_atom(Group) ->
   pg:get_members(?MODULE, Group).
 
 -else.
-%% PG2
 
 child_spec() -> undefined.
 
@@ -58,7 +50,7 @@ get_members(Group) when is_atom(Group) ->
   pg2:get_members(ensure_namespace(Group)).
 
 ensure_namespace(Group) ->
-  Namespace = {chat_room, Group},
+  Namespace = {ebus, Group},
   ok = pg2:create(Namespace),
   Namespace.
 

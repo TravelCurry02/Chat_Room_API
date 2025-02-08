@@ -1,14 +1,15 @@
-{application, chat_room, [
+{application, ebus, [
   {description, "Simple, Distributed and Scalable PubSub Message Bus written in Erlang"},
   {vsn, "0.3.0"},
-  {id, "chat_room"},
+  {id, "ebus"},
   {modules, []},
   {registered, []},
   {applications, [kernel, stdlib]},
-  {mod, {chat_room, []}},
+  {mod, {ebus, []}},
   {env, []},
-  {maintainers, ["N/A"]},
+  {maintainers, ["Carlos Andres Bolanos"]},
+  {licenses, ["MIT"]},
   {build_tools, ["rebar3", "make"]},
   {doc, "doc"},
-  {pkg_name, "chat_room"}
+  {pkg_name, "erlbus"}
 ]}.
