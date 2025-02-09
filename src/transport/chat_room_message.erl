@@ -1,4 +1,4 @@
--module(ebus_message).
+-module(chat_room_message).
 
 -export([new/0, new/1, new/2, new/3, new/4]).
 -export([from_map/1]).
@@ -8,7 +8,7 @@
   event   => binary() | nil,
   payload => term(),
   ref     => binary() | nil,
-  ebus_t  => message
+  chat_room_t  => message
 }.
 
 -export_type([t/0]).
@@ -34,17 +34,17 @@ new(Topic, Event, Payload, Ref)
     event   => Event,
     payload => Payload,
     ref     => Ref,
-    ebus_t  => message
+    chat_room_t  => message
   }.
 
 -spec from_map(map()) -> t().
 from_map(Map) ->
-  BinKey = fun(K, V, Acc) -> Acc#{ebus_common:to_bin(K) => V} end,
+  BinKey = fun(K, V, Acc) -> Acc#{chat_room_common:to_bin(K) => V} end,
   BinMap = maps:fold(BinKey, #{}, Map),
   #{
     topic   => maps:get(<<"topic">>, BinMap, nil),
     event   => maps:get(<<"event">>, BinMap, nil),
     payload => maps:get(<<"payload">>, BinMap, nil),
     ref     => maps:get(<<"ref">>, BinMap, nil),
-    ebus_t  => message
+    chat_room_t  => message
   }.

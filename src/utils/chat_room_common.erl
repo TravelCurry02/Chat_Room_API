@@ -1,4 +1,4 @@
--module(ebus_common).
+-module(chat_room_common).
 
 -export([keyfind/2, keyfind/3, rand_elem/1]).
 -export([build_name/1, build_name/2]).

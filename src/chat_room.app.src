@@ -1,11 +1,11 @@
-{application, ebus, [
+{application, chat_room, [
   {description, "Simple, Distributed and Scalable PubSub Message Bus written in Erlang"},
   {vsn, "0.3.0"},
-  {id, "ebus"},
+  {id, "chat_room"},
   {modules, []},
   {registered, []},
   {applications, [kernel, stdlib]},
-  {mod, {ebus, []}},
+  {mod, {chat_room, []}},
   {env, []},
   {maintainers, ["Carlos Andres Bolanos"]},
   {licenses, ["MIT"]},

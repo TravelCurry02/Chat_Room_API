@@ -1,4 +1,4 @@
--module(ebus_proc).
+-module(chat_room_proc).
 
 -export([wait_for_msg/0, wait_for_msg/1]).
 -export([messages/0, messages/1, r_messages/1]).

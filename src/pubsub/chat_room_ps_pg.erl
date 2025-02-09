@@ -1,4 +1,4 @@
--module(ebus_ps_pg).
+-module(chat_room_ps_pg).
 
 -export([
   child_spec/0,
@@ -50,7 +50,7 @@ get_members(Group) when is_atom(Group) ->
   pg2:get_members(ensure_namespace(Group)).
 
 ensure_namespace(Group) ->
-  Namespace = {ebus, Group},
+  Namespace = {chat_room, Group},
   ok = pg2:create(Namespace),
   Namespace.
 

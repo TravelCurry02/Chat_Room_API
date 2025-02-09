@@ -1,4 +1,4 @@
--module(ebus_supervisor_spec).
+-module(chat_room_supervisor_spec).
 
 -export([supervise/2]).
 -export([supervisor/2, supervisor/3]).

@@ -1,4 +1,4 @@
--module(ebus_ps_gc).
+-module(chat_room_ps_gc).
 
 -behaviour(gen_server).
 

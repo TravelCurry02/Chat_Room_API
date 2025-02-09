@@ -1,4 +1,4 @@
--module(ebus_ps_local).
+-module(chat_room_ps_local).
 
 -behaviour(gen_server).
 
@@ -52,7 +52,7 @@ subscribe(Server, PoolSize, Pid, Topic, Opts) when is_atom(Server) ->
     local_for_pid(Server, Pid, PoolSize),
     {subscribe, Pid, Topic, Opts}
   ),
-  Fastlane = ebus_common:keyfind(fastlane, Opts),
+  Fastlane = chat_room_common:keyfind(fastlane, Opts),
   true = ets:insert(Topics, {Topic, {Pid, Fastlane}}),
   true = ets:insert(Pids, {Pid, Topic}),
   ok.
@@ -62,7 +62,7 @@ unsubscribe(Server, PoolSize, Pid, Topic) when is_atom(Server) ->
   {LocalServer, GCServer} = pools_for_shard(
     pid_to_shard(Pid, PoolSize), Server
   ),
-  ok = ebus_ps_gc:unsubscribe(Pid, Topic, LocalServer, GCServer).
+  ok = chat_room_ps_gc:unsubscribe(Pid, Topic, LocalServer, GCServer).
 
 -spec broadcast(atom(), pos_integer(), pid(), binary(), term()) -> ok.
 broadcast(Server, 1, From, Topic, Msg) when is_atom(Server) ->
@@ -74,7 +74,7 @@ broadcast(Server, PoolSize, From, Topic, Msg) when is_atom(Server) ->
   end, lists:seq(0, PoolSize - 1)).
 
 do_broadcast(Server, Shard, From, Topic,
-             #{ebus_t := broadcast, event := Event} = Msg) ->
+             #{chat_room_t := broadcast, event := Event} = Msg) ->
   Reduce = fun
     ({Pid, _Fastlanes}, Cache) when Pid == From ->
       Cache;
@@ -151,11 +151,11 @@ subscription(Server, PoolSize, Pid) when is_atom(Server) ->
 
 -spec local_name(atom(), non_neg_integer()) -> atom().
 local_name(Server, Shard) ->
-  ebus_common:build_name([Server, <<"local">>, Shard], <<"_">>).
+  chat_room_common:build_name([Server, <<"local">>, Shard], <<"_">>).
 
 -spec gc_name(atom(), non_neg_integer()) -> atom().
 gc_name(Server, Shard) ->
-  ebus_common:build_name([Server, <<"gc">>, Shard], <<"_">>).
+  chat_room_common:build_name([Server, <<"gc">>, Shard], <<"_">>).
 
 init([Local, GC]) ->
   TabOpts = [
@@ -172,7 +172,7 @@ init([Local, GC]) ->
 
 handle_call({subscribe, Pid, _Topic, Opts}, _From,
             #{topics := Topics, pids := Pids} = State) ->
-  case ebus_common:keyfind(link, Opts) of
+  case chat_room_common:keyfind(link, Opts) of
     nil -> ok;
     _   -> link(Pid)
   end,
@@ -186,7 +186,7 @@ handle_cast(_Request, State) ->
 
 handle_info({'DOWN', _Ref, _Type, Pid, _Info},
             #{gc_server := GCServer} = State) ->
-  ebus_ps_gc:down(GCServer, Pid),
+  chat_room_ps_gc:down(GCServer, Pid),
   {noreply, State};
 handle_info(_Info, State) ->
   {noreply, State}.

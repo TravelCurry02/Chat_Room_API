@@ -1,4 +1,4 @@
--module(ebus_reply).
+-module(chat_room_reply).
 
 -export([new/0, new/1, new/2, new/3, new/4]).
 -export([from_map/1]).
@@ -8,7 +8,7 @@
   status  => atom(),
   payload => term(),
   ref     => binary() | nil,
-  ebus_t  => reply
+  chat_room_t  => reply
 }.
 
 -export_type([t/0]).
@@ -33,17 +33,17 @@ new(Topic, Status, Payload, Ref)
     status  => Status,
     payload => Payload,
     ref     => Ref,
-    ebus_t  => reply
+    chat_room_t  => reply
   }.
 
 -spec from_map(map()) -> t().
 from_map(Map) ->
-  BinKey = fun(K, V, Acc) -> Acc#{ebus_common:to_bin(K) => V} end,
+  BinKey = fun(K, V, Acc) -> Acc#{chat_room_common:to_bin(K) => V} end,
   BinMap = maps:fold(BinKey, #{}, Map),
   #{
     topic   => maps:get(<<"topic">>, BinMap, nil),
-    status  => ebus_common:to_atom(maps:get(<<"status">>, BinMap, nil)),
+    status  => chat_room_common:to_atom(maps:get(<<"status">>, BinMap, nil)),
     payload => maps:get(<<"payload">>, BinMap, nil),
     ref     => maps:get(<<"ref">>, BinMap, nil),
-    ebus_t  => reply
+    chat_room_t  => reply
   }.

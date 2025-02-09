@@ -1,4 +1,4 @@
--module(ebus).
+-module(chat_room).
 
 -behaviour(application).
 
@@ -26,7 +26,7 @@
 
 -type dispatch_opts() :: [dispatch_opt()].
 
--type options() :: ebus_ps_local:options().
+-type options() :: chat_room_ps_local:options().
 
 -export_type([
   topic/0,
@@ -44,36 +44,36 @@ sub(Server, Handler, Topic) ->
 
 -spec sub(atom(), handler(), topic(), options()) -> ok | {error, term()}.
 sub(Server, Handler, Topic, Opts) ->
-  ebus_ps:subscribe(Server, Handler, ebus_common:to_bin(Topic), Opts).
+  chat_room_ps:subscribe(Server, Handler, chat_room_common:to_bin(Topic), Opts).
 
 unsub(Handler, Topic) ->
   unsub(server(), Handler, Topic).
 
 -spec unsub(atom(), handler(), topic()) -> ok | {error, term()}.
 unsub(Server, Handler, Topic) ->
-  ebus_ps:unsubscribe(Server, Handler, ebus_common:to_bin(Topic)).
+  chat_room_ps:unsubscribe(Server, Handler, chat_room_common:to_bin(Topic)).
 
 pub(Topic, Message) ->
   pub(server(), Topic, Message).
 
 -spec pub(atom(), topic(), term()) -> ok | {error, term()}.
 pub(Server, Topic, Message) ->
-  ebus_ps:broadcast(Server, ebus_common:to_bin(Topic), Message).
+  chat_room_ps:broadcast(Server, chat_room_common:to_bin(Topic), Message).
 
 pub_from(From, Topic, Message) ->
   pub_from(server(), From, Topic, Message).
 
 -spec pub_from(atom(), handler(), topic(), term()) -> ok | {error, term()}.
 pub_from(Server, FromHandler, Topic, Message) ->
-  BinTopic = ebus_common:to_bin(Topic),
-  ebus_ps:broadcast_from(Server, FromHandler, BinTopic, Message).
+  BinTopic = chat_room_common:to_bin(Topic),
+  chat_room_ps:broadcast_from(Server, FromHandler, BinTopic, Message).
 
 subscribers(Topic) ->
   subscribers(server(), Topic).
 
 -spec subscribers(atom(), topic()) -> [pid()].
 subscribers(Server, Topic) ->
-  BinTopic = ebus_common:to_bin(Topic),
+  BinTopic = chat_room_common:to_bin(Topic),
   {ResL, _} = rpc:multicall(?MODULE, local_subscribers, [Server, BinTopic]),
   lists:merge(ResL).
 
@@ -82,7 +82,7 @@ local_subscribers(Topic) ->
 
 -spec local_subscribers(atom(), topic()) -> [pid()].
 local_subscribers(Server, Topic) ->
-  ebus_ps:subscribers(Server, ebus_common:to_bin(Topic)).
+  chat_room_ps:subscribers(Server, chat_room_common:to_bin(Topic)).
 
 topics() ->
   topics(server()).
@@ -97,7 +97,7 @@ local_topics() ->
 
 -spec local_topics(atom()) -> [binary()].
 local_topics(Server) ->
-  ebus_ps:list(Server).
+  chat_room_ps:list(Server).
 
 dispatch(Topic, Message) ->
   dispatch(Topic, Message, []).
@@ -107,13 +107,13 @@ dispatch(Topic, Message, Opts) ->
 
 -spec dispatch(atom(), topic(), term(), dispatch_opts()) -> ok.
 dispatch(Server, Topic, Message, Opts) ->
-  BinTopic = ebus_common:to_bin(Topic),
-  Subscribers = case ebus_common:keyfind(scope, Opts, local) of
+  BinTopic = chat_room_common:to_bin(Topic),
+  Subscribers = case chat_room_common:keyfind(scope, Opts, local) of
     local -> local_subscribers(Server, BinTopic);
     _     -> subscribers(Server, BinTopic)
   end,
-  DispatchFun = case ebus_common:keyfind(dispatch_fun, Opts) of
-    nil -> fun ebus_common:rand_elem/1;
+  DispatchFun = case chat_room_common:keyfind(dispatch_fun, Opts) of
+    nil -> fun chat_room_common:rand_elem/1;
     Fun -> Fun
   end,
   case Subscribers of
@@ -122,19 +122,19 @@ dispatch(Server, Topic, Message, Opts) ->
   end.
 
 -spec start() -> {ok, _} | {error, term()}.
-start() -> application:ensure_all_started(ebus).
+start() -> application:ensure_all_started(chat_room).
 
 -spec stop() -> ok | {error, term()}.
-stop() -> application:stop(ebus).
+stop() -> application:stop(chat_room).
 
-start(_StartType, _StartArgs) -> ebus_sup:start_link().
+start(_StartType, _StartArgs) -> chat_room_sup:start_link().
 
 stop(_State) -> ok.
 
 -spec server() -> atom().
 server() ->
-  PubSub = application:get_env(ebus, pubsub, []),
-  ebus_common:keyfind(name, PubSub, default_ps_server()).
+  PubSub = application:get_env(chat_room, pubsub, []),
+  chat_room_common:keyfind(name, PubSub, default_ps_server()).
 
--spec default_ps_server() -> ebus_ps.
-default_ps_server() -> ebus_ps.
+-spec default_ps_server() -> chat_room_ps.
+default_ps_server() -> chat_room_ps.

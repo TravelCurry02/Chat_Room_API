@@ -1,4 +1,4 @@
--module(ebus_ps_pg2_server).
+-module(chat_room_ps_pg2_server).
 
 -behaviour(gen_server).
 
@@ -26,13 +26,13 @@ start_link(Name) ->
 broadcast(Name, PoolSize, FromPid, Topic, Msg) ->
   lists:foreach(fun
     (Pid) when node(Pid) == node() ->
-      ebus_ps_local:broadcast(Name, PoolSize, FromPid, Topic, Msg);
+      chat_room_ps_local:broadcast(Name, PoolSize, FromPid, Topic, Msg);
     (Pid) ->
       Pid ! {forward_to_local, FromPid, PoolSize, Topic, Msg}
-  end, ebus_ps_pg:get_members(Name)).
+  end, chat_room_ps_pg:get_members(Name)).
 
 init(Name) ->
-  ok = ebus_ps_pg:join(Name, self()),
+  ok = chat_room_ps_pg:join(Name, self()),
   {ok, Name}.
 
 handle_call(_Request, _From, State) ->
@@ -43,7 +43,7 @@ handle_cast(_Request, State) ->
 
 handle_info({forward_to_local, FromPid, PoolSize, Topic, Msg}, Name) ->
 
-  ebus_ps_local:broadcast(Name, PoolSize, FromPid, Topic, Msg),
+  chat_room_ps_local:broadcast(Name, PoolSize, FromPid, Topic, Msg),
   {noreply, Name};
 handle_info(_Info, State) ->
   {noreply, State}.

@@ -1,4 +1,4 @@
--module(ebus_ps).
+-module(chat_room_ps).
 
 -export([
   subscribe/3,
@@ -10,7 +10,7 @@
   list/1
 ]).
 
--type options() :: ebus_ps_local:options().
+-type options() :: chat_room_ps_local:options().
 
 subscribe(Server, Pid, Topic) ->
   subscribe(Server, Pid, Topic, []).
